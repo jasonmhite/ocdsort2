@@ -80,7 +80,6 @@ def parse(filenames):
                 raise KeyError("Could not parse series name")
 
             else:
-                if 'season' in info.keys():
                 info['filename'] = filename
                 yield info
 
