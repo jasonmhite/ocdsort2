@@ -7,7 +7,10 @@ import shutil
 from tvnamer import utils
 from fuzzywuzzy import process
 
-EPSILON = 80
+confdir = os.path.join(
+    os.getenv('HOME'),
+    'ocdsort.yml',
+)
 
 @click.group()
 def main():
@@ -29,7 +32,7 @@ def build_index(shows):
 
     return aliases
 
-config, shows = parse_config('/home/jmhite/Dev/ocdsort3/config.yml')
+config, shows = parse_config(confdir)
 all_shows = build_index(shows)
 
 @click.command()
