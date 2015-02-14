@@ -139,8 +139,8 @@ def generate_names(episodes):
         yield info
 
 def move_files(episodes, clean=True):
-    for episode in episodes:
-        if not episode['failed']:
+    for info in episodes:
+        if not info['failed']:
             try:
                 # Note: don't think the renamer in tvnamer works correctly
 
