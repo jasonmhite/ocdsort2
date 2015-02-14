@@ -92,91 +92,85 @@ def parse(filenames):
 
 def identify(episodes):
     for info in episodes:
-        if info['failed']:
-            continue
+        if not info['failed']:
+            alias_name, confidence = process.extractOne(
+                info['seriesname'],
+                all_shows.keys(),
+            )
 
-        alias_name, confidence = process.extractOne(
-            info['seriesname'],
-            all_shows.keys(),
-        )
+            if confidence > config['threshold']:
+                info["identified_as"] = all_shows[alias_name]
+                info["confidence"] = confidence
 
-        if confidence > config['threshold']:
-            info["identified_as"] = all_shows[alias_name]
-            info["confidence"] = confidence
-
-        else:
-            info['failed'] = True
-            info['failure_reason'] = "Series not identified (confidence={})".format(confidence)
+            else:
+                info['failed'] = True
+                info['failure_reason'] = "Series not identified (confidence={})".format(confidence)
 
         yield info
 
 def generate_names(episodes):
     for info in episodes:
-        if info['failed']:
-            continue
-
-        try:
-            title = info['identified_as']
-            extension = info['ext']
-
-            # Check for optional overrides
+        if not info['failed']:
             try:
-                info['offset'] = shows[title]['episode_offset']
-                episode = int(info['episode']) + info['offset']
-            except KeyError:
-                info['offset'] = 0
-                episode = int(info['episode'])
+                title = info['identified_as']
+                extension = info['ext']
 
-            try:
-                info['season'] = int(shows[title]['season'])
-            except KeyError:
-                info['season'] = 1
+                # Check for optional overrides
+                try:
+                    info['offset'] = shows[title]['episode_offset']
+                    episode = int(info['episode']) + info['offset']
+                except KeyError:
+                    info['offset'] = 0
+                    episode = int(info['episode'])
 
-            info["new_name"] = utils.makeValidFilename(
-                "{identified_as} - S{season}E{episode}{ext}".format(**info),
-            )
+                try:
+                    info['season'] = int(shows[title]['season'])
+                except KeyError:
+                    info['season'] = 1
 
-        except Exception as e:
-            info['failed'] = True
-            info['failure_reason'] = "Error during name generation ({})".format(e)
+                info["new_name"] = utils.makeValidFilename(
+                    "{identified_as} - S{season}E{episode}{ext}".format(**info),
+                )
+
+            except Exception as e:
+                info['failed'] = True
+                info['failure_reason'] = "Error during name generation ({})".format(e)
 
         yield info
 
 def move_files(episodes, clean=True):
     for episode in episodes:
-        if info['failed']:
-            continue
-
-        try:
-            # Note: don't think the renamer in tvnamer works correctly
-
-            new_path = os.path.join(
-                config['destination'],
-                info['identified_as'],
-            )
-
-            # See if directory exists, otherwise make it
+        if not info['failed']:
             try:
-                os.makedirs(new_path)
-            except OSError as e:
-                if e.errno != 17:
-                    raise
+                # Note: don't think the renamer in tvnamer works correctly
 
-            new_full_name = os.path.join(new_path, episode['new_name'])
+                new_path = os.path.join(
+                    config['destination'],
+                    info['identified_as'],
+                )
 
-            shutil.copyfile(
-                episode['filename'],
-                new_full_name,
-            )
+                # See if directory exists, otherwise make it
+                try:
+                    os.makedirs(new_path)
+                except OSError as e:
+                    if e.errno != 17:
+                        raise
 
-            if clean:
-                os.unlink(episode['filename'])
+                new_full_name = os.path.join(new_path, episode['new_name'])
 
-            info['moved_to'] = new_full_name
+                shutil.copyfile(
+                    episode['filename'],
+                    new_full_name,
+                )
 
-        except Exception as e:
-            info['failed'] = True
-            info['failure_reason'] = "Error moving file ({})".format(e)
+                if clean:
+                    os.unlink(episode['filename'])
+
+                info['moved_to'] = new_full_name
+
+            except Exception as e:
+                info['failed'] = True
+                info['failure_reason'] = "Error moving file ({})".format(e)
 
 def print_results(success, fail):
     click.secho("Successfully identified:")
