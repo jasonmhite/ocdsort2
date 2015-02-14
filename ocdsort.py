@@ -58,7 +58,8 @@ def sort(path, dry):
         click.confirm("Proceed to move files?", abort=True)
 
         with click.progressbar(success) as bar:
-            move_files(success)
+            for file in bar:
+                move_files(file)
 
 def parse(filenames):
     for filename in filenames:
