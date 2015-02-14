@@ -30,7 +30,7 @@ def build_index(shows):
         try:
             for alias in value['names']:
                 aliases[alias] = key
-        except KeyError, TypeError:
+        except (KeyError, TypeError):
             pass
 
     return aliases
