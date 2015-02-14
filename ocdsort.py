@@ -138,39 +138,37 @@ def generate_names(episodes):
 
         yield info
 
-def move_files(episodes, clean=True):
-    for info in episodes:
-        if not info['failed']:
-            try:
-                # Note: don't think the renamer in tvnamer works correctly
+def move_files(info, clean=True):
+    try:
+        # Note: don't think the renamer in tvnamer works correctly
 
-                new_path = os.path.join(
-                    config['destination'],
-                    info['identified_as'],
-                )
+        new_path = os.path.join(
+            config['destination'],
+            info['identified_as'],
+        )
 
-                # See if directory exists, otherwise make it
-                try:
-                    os.makedirs(new_path)
-                except OSError as e:
-                    if e.errno != 17:
-                        raise
+        # See if directory exists, otherwise make it
+        try:
+            os.makedirs(new_path)
+        except OSError as e:
+            if e.errno != 17:
+                raise
 
-                new_full_name = os.path.join(new_path, episode['new_name'])
+        new_full_name = os.path.join(new_path, episode['new_name'])
 
-                shutil.copyfile(
-                    episode['filename'],
-                    new_full_name,
-                )
+        shutil.copyfile(
+            episode['filename'],
+            new_full_name,
+        )
 
-                if clean:
-                    os.unlink(episode['filename'])
+        if clean:
+            os.unlink(episode['filename'])
 
-                info['moved_to'] = new_full_name
+        info['moved_to'] = new_full_name
 
-            except Exception as e:
-                info['failed'] = True
-                info['failure_reason'] = "Error moving file ({})".format(e)
+    except Exception as e:
+        info['failed'] = True
+        info['failure_reason'] = "Error moving file ({})".format(e)
 
 def print_results(success, fail):
     click.secho("Successfully identified:")
