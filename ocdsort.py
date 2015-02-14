@@ -27,8 +27,11 @@ def build_index(shows):
     # Invert the dictionary
     for key, value in shows.items():
         aliases[key] = key
-        for alias in value['names']:
-            aliases[alias] = key
+        try:
+            for alias in value['names']:
+                aliases[alias] = key
+        except KeyError:
+            pass
 
     return aliases
 
@@ -155,15 +158,15 @@ def move_files(info, clean=True):
             if e.errno != 17:
                 raise
 
-        new_full_name = os.path.join(new_path, episode['new_name'])
+        new_full_name = os.path.join(new_path, info['new_name'])
 
-        shutil.copyfile(
-            episode['filename'],
+        shutil.move(
+            info['filename'],
             new_full_name,
         )
 
         if clean:
-            os.unlink(episode['filename'])
+            os.unlink(info['filename'])
 
         info['moved_to'] = new_full_name
 
