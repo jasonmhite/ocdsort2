@@ -140,7 +140,7 @@ def generate_names(episodes):
 
 def move_files(episodes, clean=True):
     for episode in episodes:
-        if not info['failed']:
+        if not epsidoe['failed']:
             try:
                 # Note: don't think the renamer in tvnamer works correctly
 
