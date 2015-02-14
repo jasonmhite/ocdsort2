@@ -31,7 +31,7 @@ def build_index(shows):
             for alias in value['names']:
                 aliases[alias] = key
         except (KeyError, TypeError):
-            pass
+            continue
 
     return aliases
 
@@ -80,6 +80,7 @@ def parse(filenames):
                 raise KeyError("Could not parse series name")
 
             else:
+                if 'season' in info.keys():
                 info['filename'] = filename
                 yield info
 
@@ -123,13 +124,13 @@ def generate_names(episodes):
                 try:
                     info['offset'] = shows[title]['episode_offset']
                     episode = int(info['episode']) + info['offset']
-                except KeyError:
+                except (KeyError, TypeError):
                     info['offset'] = 0
                     episode = int(info['episode'])
 
                 try:
                     info['season'] = int(shows[title]['season'])
-                except KeyError:
+                except (KeyError, TypeError):
                     info['season'] = 1
 
                 info["new_name"] = utils.makeValidFilename(
