@@ -45,7 +45,7 @@ def sort(path, dry):
         recursive=True,
     ).findFiles()
 
-    results = generate_names(identify(parse(filenames)))
+    results = list(generate_names(identify(parse(filenames))))
 
     success = list(filter(lambda s: not s['failed'], results))
     fail = list(filter(lambda s: s['failed'], results))
