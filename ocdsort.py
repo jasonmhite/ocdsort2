@@ -201,10 +201,11 @@ def move_files(info, clean=True):
 
 
 def print_results(success, fail):
-    click.secho("Successfully identified:")
-    for item in success:
-        fname = os.path.basename(item['filename'])
-        click.secho("    {} -> {}".format(fname, item['new_name']))
+    if len(success) > 0:
+        click.secho("Successfully identified:")
+        for item in success:
+            fname = os.path.basename(item['filename'])
+            click.secho("    {} -> {}".format(fname, item['new_name']))
 
     if len(fail) > 0:
         click.secho("\n")
