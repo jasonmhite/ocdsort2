@@ -60,9 +60,20 @@ def sort(path, dry):
         click.secho("\n")
         click.confirm("Proceed to move files?", abort=True)
 
+        to_chown = []
+
         with click.progressbar(success) as bar:
             for file in bar:
-                move_files(file)
+                to_chown += move_files(file)
+
+    print("Setting permissions")
+    for file in to_chown:
+        shutil.chown(
+            file,
+            user=config['user']['uid'],
+            user=config['user']['gid'],
+        )
+        os.chmod(file, config['user']['mode'])
 
 def parse(filenames):
     for filename in filenames:
@@ -143,6 +154,7 @@ def generate_names(episodes):
         yield info
 
 def move_files(info, clean=True):
+    to_chown = []
     try:
         # Note: don't think the renamer in tvnamer works correctly
 
@@ -154,6 +166,7 @@ def move_files(info, clean=True):
         # See if directory exists, otherwise make it
         try:
             os.makedirs(new_path)
+            to_chown.append(new_path)
         except OSError as e:
             if e.errno != 17:
                 raise
@@ -165,6 +178,8 @@ def move_files(info, clean=True):
             new_full_name,
         )
 
+        to_chown.append(new_full_name)
+
         if clean:
             os.unlink(info['filename'])
 
@@ -172,7 +187,11 @@ def move_files(info, clean=True):
 
     except Exception as e:
         info['failed'] = True
+        info['moved_to'] = None
         info['failure_reason'] = "Error moving file ({})".format(e)
+
+    return to_chown
+
 
 def print_results(success, fail):
     click.secho("Successfully identified:")
@@ -184,6 +203,7 @@ def print_results(success, fail):
         click.secho("Failures:")
         for item in fail:
             click.secho("    {filename} -> {failure_reason}".format(**item))
+
 
 if __name__ == '__main__':
     sort()
