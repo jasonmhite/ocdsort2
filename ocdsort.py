@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.4
 import yaml
 import click
 import os
@@ -71,7 +71,7 @@ def sort(path, dry):
         shutil.chown(
             file,
             user=config['user']['uid'],
-            user=config['user']['gid'],
+            group=config['user']['gid'],
         )
         os.chmod(file, config['user']['mode'])
 
