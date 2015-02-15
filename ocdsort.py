@@ -6,6 +6,7 @@ import tvnamer
 import shutil
 from tvnamer import utils
 from fuzzywuzzy import process
+import sys
 
 confdir = os.path.join(
     os.getenv('HOME'),
@@ -53,6 +54,9 @@ def sort(path, dry):
     success = list(filter(lambda s: not s['failed'], results))
     fail = list(filter(lambda s: s['failed'], results))
 
+    if len(success) == 0 and len(fail) == 0:
+        print("No files found")
+        sys.exit(0)
 
     print_results(success, fail)
 
