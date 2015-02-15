@@ -77,7 +77,10 @@ def sort(path, dry):
             user=config['user']['uid'],
             group=config['user']['gid'],
         )
-        os.chmod(file, config['user']['mode'])
+        os.chmod(
+            file,
+            int(config['user']['mode'], 8),
+        )
 
 def parse(filenames):
     for filename in filenames:
@@ -200,13 +203,17 @@ def move_files(info, clean=True):
 def print_results(success, fail):
     click.secho("Successfully identified:")
     for item in success:
-        click.secho("    {filename} -> {new_name}".format(**item))
+        fname = os.path.basename(item['filename'])
+        click.secho("    {} -> {}".format(fname, item['new_name']))
 
     if len(fail) > 0:
         click.secho("\n")
         click.secho("Failures:")
         for item in fail:
-            click.secho("    {filename} -> {failure_reason}".format(**item))
+            click.secho("    {} -> {failure_reason}".format(
+                fname,
+                item['failure_reason'],
+            ))
 
 
 if __name__ == '__main__':
