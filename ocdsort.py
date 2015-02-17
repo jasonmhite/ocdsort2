@@ -4,9 +4,12 @@ import click
 import os
 import tvnamer
 import shutil
+import tvdb_api
+import arrow
+import sys
 from tvnamer import utils
 from fuzzywuzzy import process
-import sys
+from tvdb_api.tvdb_exceptions import tvdb_exception
 
 confdir = os.path.join(
     os.getenv('HOME'),
@@ -216,6 +219,50 @@ def print_results(success, fail):
                 item['failure_reason'],
             ))
 
+@click.command()
+def missing():
+    filenames = utils.FileFinder(
+        config['destination'],
+        with_extension=config['valid_extensions'],
+        recursive=True,
+    ).findFiles()
+
+    results = list(grab_tvdb(identify(parse(filenames))))
+
+    success = list(filter(lambda s: not s['failed'], results))
+    fail = list(filter(lambda s: s['failed'], results))
+
+    print(success)
+
+def grab_tvdb(episodes):
+    T = tvdb_api.Tvdb()
+
+    for info in episodes:
+        if not info['failed']:
+            show_config = shows[info['identified_as']]
+
+            try:
+                C = show_config['tvdb']
+                tvdb_id = C['id']
+
+                tvdb_season = C['season'] if 'season' in C else 1
+                tvdb_offset = C['offset'] if 'offset' in C else 0
+
+                try:
+                    show = T[tvdb_id]
+                    ep = show[tvdb_season][int(info['episode']) + tvdb_offset]
+
+                    info['tvdb_meta'] = ep
+
+                except tvdb_exception as e:
+                    info['failed'] = True
+                    info['failure_reason'] = "TVDB lookup failure ({})".format(e)
+
+            except KeyError:
+                info['failed'] = True
+                info['failure_reason'] = "No TVDB info provided or id not provided"
+
+        yield info
 
 if __name__ == '__main__':
     sort()
