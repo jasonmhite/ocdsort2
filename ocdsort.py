@@ -42,7 +42,7 @@ def build_index(shows):
 config, shows = parse_config(confdir)
 all_shows = build_index(shows)
 
-@click.command()
+@main.command()
 @click.argument('path', type=click.Path(exists=True))
 @click.option('--dry', is_flag=True)
 def sort(path, dry):
@@ -219,7 +219,7 @@ def print_results(success, fail):
                 item['failure_reason'],
             ))
 
-@click.command()
+@main.command()
 def missing():
     filenames = utils.FileFinder(
         config['destination'],
@@ -265,4 +265,4 @@ def grab_tvdb(episodes):
         yield info
 
 if __name__ == '__main__':
-    sort()
+    main()
