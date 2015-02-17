@@ -9,7 +9,8 @@ import arrow
 import sys
 from tvnamer import utils
 from fuzzywuzzy import process
-from tvdb_api.tvdb_exceptions import tvdb_exception
+# Apparently doesn't work?
+#from tvdb_api.tvdb_exceptions import tvdb_exception
 
 confdir = os.path.join(
     os.getenv('HOME'),
@@ -254,7 +255,7 @@ def grab_tvdb(episodes):
 
                     info['tvdb_meta'] = ep
 
-                except tvdb_exception as e:
+                except Exception as e:
                     info['failed'] = True
                     info['failure_reason'] = "TVDB lookup failure ({})".format(e)
 
