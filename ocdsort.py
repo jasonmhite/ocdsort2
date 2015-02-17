@@ -9,8 +9,6 @@ import arrow
 import sys
 from tvnamer import utils
 from fuzzywuzzy import process
-from operator import itemgetter
-from itertools import groupby
 # Apparently doesn't work?
 #from tvdb_api.tvdb_exceptions import tvdb_exception
 
@@ -272,15 +270,19 @@ def grab_tvdb(episodes):
         yield info
 
 # Note: expects a list? Maybe?
-def determine_shows(episodes: list):
-    sorted_eps = sorted(
-        filter(lambda x: not x['failed'], episodes),
-        key=itemgetter('identified_as')
-    )
+def determine_shows(episodes):
+    known_shows = {}
 
-    grouped_eps = [[x for x, y in g] for k, g in groupby(sorted_eps, key=itemgetter('identified_as'))]
+    for info in episodes:
+        if not info['failed']:
+            name = info['identified_as']
+            if name in known_shows:
+                known_shows[name] = info
 
-    print(grouped_eps)
+            else:
+                known_shows[name] = [info]
+
+    print(known_shows)
 
 
 if __name__ == '__main__':
