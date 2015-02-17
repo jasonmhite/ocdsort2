@@ -9,6 +9,8 @@ import arrow
 import sys
 from tvnamer import utils
 from fuzzywuzzy import process
+from operator import itemgetter
+from itertools import groupby
 # Apparently doesn't work?
 #from tvdb_api.tvdb_exceptions import tvdb_exception
 
@@ -233,10 +235,9 @@ def missing():
     success = list(filter(lambda s: not s['failed'], results))
     fail = list(filter(lambda s: s['failed'], results))
 
-    for i in success:
-        for j in i:
-            print(j)
-        print('\n')
+    print(success)
+
+    print(determine_shows(results))
 
 def grab_tvdb(episodes):
     T = tvdb_api.Tvdb(cache=False)
@@ -269,6 +270,18 @@ def grab_tvdb(episodes):
                 info['failure_reason'] = "No TVDB info provided or id not provided"
 
         yield info
+
+# Note: expects a list? Maybe?
+def determine_shows(episodes: list):
+    sorted_eps = sorted(
+        filter(lambda x: not x['failed'], episodes),
+        key=itemgetter('identified_as')
+    )
+
+    grouped_eps = [[x for x, y in g] for k, g in groupby(sorted_eps, key=itemgetter('identified_as'))]
+
+    print(grouped_eps)
+
 
 if __name__ == '__main__':
     main()
