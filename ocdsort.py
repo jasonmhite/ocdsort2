@@ -233,7 +233,10 @@ def missing():
     success = list(filter(lambda s: not s['failed'], results))
     fail = list(filter(lambda s: s['failed'], results))
 
-    print(success)
+    for i in success:
+        for j in i:
+            print(j)
+        print('\n')
 
 def grab_tvdb(episodes):
     T = tvdb_api.Tvdb(cache=False)
@@ -251,9 +254,11 @@ def grab_tvdb(episodes):
 
                 try:
                     show = T[tvdb_id]
-                    ep = show[tvdb_season][int(info['episode']) + tvdb_offset]
+                    season = show[tvdb_season]
+                    ep = season[int(info['episode']) + tvdb_offset]
 
-                    info['tvdb_meta'] = ep
+                    info['tvdb_meta_season'] = season
+                    info['tvdb_meta_episode'] = ep
 
                 except Exception as e:
                     info['failed'] = True
