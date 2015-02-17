@@ -236,7 +236,7 @@ def missing():
     print(success)
 
 def grab_tvdb(episodes):
-    T = tvdb_api.Tvdb()
+    T = tvdb_api.Tvdb(cache=False)
 
     for info in episodes:
         if not info['failed']:
