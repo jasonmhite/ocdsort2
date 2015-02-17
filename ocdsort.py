@@ -276,8 +276,9 @@ def determine_shows(episodes):
     for info in episodes:
         if not info['failed']:
             name = info['identified_as']
+
             if name in known_shows:
-                known_shows[name] = info
+                known_shows[name].append(info)
 
             else:
                 known_shows[name] = [info]
