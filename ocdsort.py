@@ -259,7 +259,7 @@ def grab_tvdb(episodes):
                     info['failed'] = True
                     info['failure_reason'] = "TVDB lookup failure ({})".format(e)
 
-            except KeyError:
+            except (KeyError, TypeError):
                 info['failed'] = True
                 info['failure_reason'] = "No TVDB info provided or id not provided"
 
