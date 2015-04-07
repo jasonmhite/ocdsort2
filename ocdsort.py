@@ -83,7 +83,7 @@ def sort(path, dry):
         )
 
 def parse(filenames):
-    need_newl = False
+    need_header = False
     for filename in filenames:
         try:
             r = utils.FileParser(filename).parse()
@@ -212,7 +212,7 @@ def print_results(success, fail):
             click.secho("    {} -> {}".format(fname, item['new_name']))
 
     if len(fail) > 0:
-        click.secho("\n")
+        click.secho("")
         click.secho("Failures:")
         for item in fail:
             click.secho("    {} -> {}".format(
