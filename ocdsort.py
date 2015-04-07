@@ -61,7 +61,6 @@ def sort(path, dry):
     print_results(success, fail)
 
     if not dry:
-        click.secho("")
         click.confirm("Proceed to move files?", abort=True)
 
         to_chown = []
@@ -85,7 +84,7 @@ def sort(path, dry):
         )
 
 def parse(filenames):
-    need_header = False
+    need_newl = False
     for filename in filenames:
         try:
             r = utils.FileParser(filename).parse()
@@ -116,7 +115,7 @@ def parse(filenames):
             need_newl = True
             continue
     if need_newl:
-        print("")
+        click.secho("")
 
 def identify(episodes):
     for info in episodes:
@@ -213,15 +212,17 @@ def print_results(success, fail):
             fname = os.path.basename(item['filename'])
             click.secho("    {} -> {}".format(fname, item['new_name']))
 
-    if len(fail) > 0:
         click.secho("")
+
+    if len(fail) > 0:
         click.secho("Failures:")
         for item in fail:
+            fname = os.path.basename(item['filename'])
             click.secho("    {} -> {}".format(
                 fname,
                 item['failure_reason'],
             ))
-
+        click.secho("")
 
 if __name__ == '__main__':
     sort()
