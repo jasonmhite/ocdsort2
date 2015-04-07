@@ -211,7 +211,7 @@ def print_results(success, fail):
         click.secho("\n")
         click.secho("Failures:")
         for item in fail:
-            click.secho("    {} -> {failure_reason}".format(
+            click.secho("    {} -> {}".format(
                 fname,
                 item['failure_reason'],
             ))
