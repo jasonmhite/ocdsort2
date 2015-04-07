@@ -69,7 +69,7 @@ def sort(path, dry):
         with click.progressbar(length=nsuccess) as bar:
             for file in success:
                 to_chown += move_files(file)
-                bar.update()
+                bar.update(1)
 
     click.secho("Setting permissions")
     for file in to_chown:
