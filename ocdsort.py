@@ -83,6 +83,7 @@ def sort(path, dry):
         )
 
 def parse(filenames):
+    need_newl = False
     for filename in filenames:
         try:
             r = utils.FileParser(filename).parse()
@@ -110,7 +111,10 @@ def parse(filenames):
                         e
                     )
             )
+            need_newl = True
             continue
+    if need_newl:
+        print("")
 
 def identify(episodes):
     for info in episodes:
