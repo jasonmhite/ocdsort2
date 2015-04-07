@@ -61,16 +61,18 @@ def sort(path, dry):
     print_results(success, fail)
 
     if not dry:
-        click.secho("\n")
+        click.secho("")
         click.confirm("Proceed to move files?", abort=True)
 
         to_chown = []
 
-        with click.progressbar(success) as bar:
-            for file in bar:
+        nsuccess = len(success)
+        with click.progressbar(length=nsuccess) as bar:
+            for file in success:
                 to_chown += move_files(file)
+                bar.update()
 
-    print("Setting permissions")
+    click.secho("Setting permissions")
     for file in to_chown:
         shutil.chown(
             file,
