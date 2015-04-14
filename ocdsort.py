@@ -43,6 +43,9 @@ all_shows = build_index(shows)
 @click.argument('path', type=click.Path(exists=True))
 @click.option('--dry', is_flag=True)
 def sort(path, dry):
+    do_sort(path, dry)
+
+def do_sort(path, dry):
     filenames = utils.FileFinder(
         path,
         with_extension=config['valid_extensions'],
@@ -166,6 +169,8 @@ def generate_names(episodes):
         yield info
 
 def move_files(info, clean=True):
+    # notice: this one does not loop over info, because the main loop prints
+    # the progress bar
     to_chown = []
     try:
         # Note: don't think the renamer in tvnamer works correctly
@@ -174,6 +179,7 @@ def move_files(info, clean=True):
             config['destination'],
             info['identified_as'],
         )
+        print(new_path)
 
         # See if directory exists, otherwise make it
         try:
