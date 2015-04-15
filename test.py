@@ -30,8 +30,10 @@ PARSED_CONFIG = {
         "some show": None
     },
 }
-with mock.patch("builtins.open", mock.mock_open(read_data=CONFIG)):
-    import ocdsort
+
+import ocdsort
+
+ocdsort.g_config = PARSED_CONFIG
 
 def test_config():
     assert ocdsort.config == PARSED_CONFIG["config"]

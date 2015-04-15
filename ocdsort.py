@@ -7,66 +7,33 @@ import shutil
 from tvnamer import utils
 from fuzzywuzzy import process
 import sys
+from lazy_object_proxy import Proxy
 
 confdir = os.path.join(
     os.getenv('HOME'),
     'ocdsort.yml',
 )
 
-class LazyDict(object):
-    __data__ = False
-
-    def __init__(self, initfxn):
-        self._initfxn = initfxn
-
-    def _doinit(self):
-        self.__data__ = self._initfxn()
-        self._getitem = self.__data__.__getitem__
-
-    def _getitem(self, key):
-        # Python does not do lookups on magic methods, so this is
-        # necessary
-        self._doinit()
-        return self.__data__[key]
-
-    def keys(self):
-        if not self.__data__:
-            self._doinit()
-
-        return self.__data__.keys()
-
-    def items(self):
-        if not self.__data__:
-            self._doinit()
-
-        return self.__data__.items()
-
-    def __getitem__(self, key):
-        return self._getitem(key)
-
-def delay(*args, **kwargs):
-    def delayed_eval(f):
+def lazy(*args, **kwargs):
+    def call_f(f):
         return lambda: f(*args, **kwargs)
 
-    return delayed_eval
+    return lambda f: Proxy(call_f(f))
 
-@delay(confdir)
-def load_config(filename):
+@lazy(confdir)
+def global_config(filename):
     with open(filename) as f:
-        return yaml.load(f.read())
+        conf = yaml.load(f.read())
 
-g_config = LazyDict(load_config)
+    return conf
 
-@delay(g_config)
-def config_read(c):
+@lazy(global_config)
+def config(c):
     return c['config']
 
-@delay(g_config)
-def shows_read(c):
+@lazy(global_config)
+def shows(c):
     return c['shows']
-
-config = LazyDict(config_read)
-shows = LazyDict(shows_read)
 
 @click.group()
 def main():
@@ -78,8 +45,8 @@ def parse_config(filename):
 
     return config['config'], config['shows']
 
-@delay(shows)
-def build_index(shows):
+@lazy(shows)
+def all_shows(shows):
     aliases = {}
     # Invert the dictionary
     for key, value in shows.items():
@@ -94,8 +61,6 @@ def build_index(shows):
 
 #config, shows = parse_config(confdir)
 #all_shows = build_index(shows)
-
-all_shows = LazyDict(build_index)
 
 @click.command()
 @click.argument('path', type=click.Path(exists=True))
