@@ -13,6 +13,46 @@ confdir = os.path.join(
     'ocdsort.yml',
 )
 
+class LazyDict(dict):
+    __data__ = None
+    def __init__(self, initfxn):
+        self._initfxn = initfxn
+
+    def _getitem(self, key):
+        # Python does not do lookups on magic methods, so this is
+        # necessary
+        self.__data__ = self._initfxn()
+        self._getitem = self.__data__.__getitem__
+
+        return self.__data__[key]
+
+    def __getitem__(self, key):
+        return self._getitem(key)
+
+def delay(*args, **kwargs):
+    def delayed_eval(f):
+        return lambda: f(*args, **kwargs)
+
+    return delayed_eval
+
+@delay(confdir)
+def load_config(filename):
+    with open(filename) as f:
+        return yaml.load(f.read())
+
+g_config = LazyDict(load_config)
+
+@delay(g_config)
+def config_read(c):
+    return c['config']
+
+@delay(g_config)
+def shows_read(c):
+    return c['shows']
+
+config = LazyDict(config_read)
+shows = LazyDict(shows_read)
+
 @click.group()
 def main():
     pass
@@ -23,6 +63,7 @@ def parse_config(filename):
 
     return config['config'], config['shows']
 
+@delay(shows)
 def build_index(shows):
     aliases = {}
     # Invert the dictionary
@@ -36,8 +77,10 @@ def build_index(shows):
 
     return aliases
 
-config, shows = parse_config(confdir)
-all_shows = build_index(shows)
+#config, shows = parse_config(confdir)
+#all_shows = build_index(shows)
+
+all_shows = LazyDict(build_index)
 
 @click.command()
 @click.argument('path', type=click.Path(exists=True))
