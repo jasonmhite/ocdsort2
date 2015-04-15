@@ -1,5 +1,6 @@
 from unittest import mock
 from copy import deepcopy as copy
+import ocdsort
 
 CONFIG = """
 config:
@@ -31,13 +32,11 @@ PARSED_CONFIG = {
     },
 }
 
-import ocdsort
-
-ocdsort.g_config = PARSED_CONFIG
 
 def test_config():
-    assert ocdsort.config == PARSED_CONFIG["config"]
-    assert ocdsort.shows == PARSED_CONFIG["shows"]
+    with mock.patch('ocdsort.open', mock.mock_open(read_data=CONFIG), create=True):
+        assert ocdsort.config == PARSED_CONFIG["config"]
+        assert ocdsort.shows == PARSED_CONFIG["shows"]
 
 files = ["[Blah] some show - 01.mkv"]
 

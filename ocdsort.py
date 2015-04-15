@@ -39,12 +39,6 @@ def shows(c):
 def main():
     pass
 
-def parse_config(filename):
-    with open(filename, 'r') as f:
-        config = yaml.load(f.read())
-
-    return config['config'], config['shows']
-
 @lazy(shows)
 def all_shows(shows):
     aliases = {}
@@ -58,9 +52,6 @@ def all_shows(shows):
             continue
 
     return aliases
-
-#config, shows = parse_config(confdir)
-#all_shows = build_index(shows)
 
 @click.command()
 @click.argument('path', type=click.Path(exists=True))
