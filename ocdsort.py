@@ -13,18 +13,33 @@ confdir = os.path.join(
     'ocdsort.yml',
 )
 
-class LazyDict(dict):
-    __data__ = None
+class LazyDict(object):
+    __data__ = False
+
     def __init__(self, initfxn):
         self._initfxn = initfxn
+
+    def _doinit(self):
+        self.__data__ = self._initfxn()
+        self._getitem = self.__data__.__getitem__
 
     def _getitem(self, key):
         # Python does not do lookups on magic methods, so this is
         # necessary
-        self.__data__ = self._initfxn()
-        self._getitem = self.__data__.__getitem__
-
+        self._doinit()
         return self.__data__[key]
+
+    def keys(self):
+        if not self.__data__:
+            self._doinit()
+
+        return self.__data__.keys()
+
+    def items(self):
+        if not self.__data__:
+            self._doinit()
+
+        return self.__data__.items()
 
     def __getitem__(self, key):
         return self._getitem(key)
