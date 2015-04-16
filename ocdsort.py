@@ -95,9 +95,9 @@ def all_shows(shows):
 
     return aliases
 
-default_entry = {
+default_entry = lambda: {
     "episodename": None,
-    "filename": None
+    "filename": None,
     "seriesname": None,
     "failure_reason": None,
     "failed": False,
@@ -109,6 +109,13 @@ default_entry = {
     "season": None,
     "offset": None
 }
+
+def filtered(f):
+    def f_filtered(items):
+        for item in filter(lambda i: i['failed'], items):
+            yield f(item)
+
+    return f_filtered
 
 @click.command()
 @click.argument('path', type=click.Path(exists=True))
@@ -159,18 +166,18 @@ def do_sort(path, dry):
 
 def parse(filenames):
     for filename in filenames:
+        info = default_entry()
         try:
             r = utils.FileParser(filename).parse()
-            info = r.getepdata()
-
-            info['failed'] = False
-            info['failure_reason'] = None
+            info.update(**r.getepdata())
 
             if info['episode'] is None:
-                raise KeyError("Could not parse episode number")
+                info['failed'] = True
+                info['failure_reason'] = 'Could not parse episode number'
 
             elif info['seriesname'] is None:
-                raise KeyError("Could not parse series name")
+                info['failed'] = True
+                info['failure_reason'] = 'Could not parse series name'
 
             else:
                 info['filename'] = filename

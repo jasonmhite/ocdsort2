@@ -53,7 +53,9 @@ def test_invalid():
 
 files = ["[Blah] some show - 01.mkv"]
 
-PARSED = {
+PARSED = ocdsort.default_entry()
+
+PARSED.update(**{
     "episodename": None,
     "filename": files[0],
     "seriesname": "some show",
@@ -61,7 +63,7 @@ PARSED = {
     "failed": False,
     "ext": '.mkv',
     "episode": "01",
-}
+})
 
 IDENTIFIED = copy(PARSED)
 IDENTIFIED.update(confidence=100, identified_as="some show")
