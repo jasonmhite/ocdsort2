@@ -110,10 +110,21 @@ def test_move_files(mock_makedirs, mock_unlink, mock_move):
         FINAL_NAME
     )
 
-temp_output = StringIO()
-@mock.patch('ocdsort.click._compat._default_text_stdout', TextIOWrapper(temp_output))
-def test_print_results():
-    ocdsort.click.echo("Hello")
-    print(temp_output.getvalue())
+mock_echo = mock.Mock('ocdsort.click.secho')
+OUTPUT = """Successfully identified:
+    [Blah] some show - 01.mkv -> some show - S1E01.mkv
 
-    raise Exception("AMBM")
+Failures:
+    [Blah] some show - 01.mkv -> Test failure
+"""
+
+def test_print_results():
+    with mock.patch('ocdsort.click.secho', mock_echo) as m:
+        success = [NAMED]
+        failure = [copy(NAMED)]
+        failure[0].update(failed=True, failure_reason="Test failure")
+        ocdsort.print_results(success, failure)
+
+        assert m.call_args_list == [mock.call(s) for s in OUTPUT.split('\n')]
+
+

@@ -132,14 +132,16 @@ def do_sort(path, dry):
 
     results = list(generate_names(identify(parse(filenames))))
 
-    success = list(filter(lambda s: not s['failed'], results))
-    fail = list(filter(lambda s: s['failed'], results))
+    #success = list(filter(lambda s: not s['failed'], results))
+    #fail = list(filter(lambda s: s['failed'], results))
 
-    if len(success) == 0 and len(fail) == 0:
-        print("No files found")
-        sys.exit(0)
+    #if len(success) == 0 and len(fail) == 0:
+        #print("No files found")
+        #sys.exit(0)
 
-    print_results(success, fail)
+    #print_results(success, fail)
+
+    print_status(results)
 
     if not dry:
         click.confirm("Proceed to move files?", abort=True)
@@ -283,7 +285,7 @@ def print_status(episodes):
             click.secho("    {} -> {}".format(fname, item['new_name']))
 
         if len(failure) > 0:
-            click.secho("")
+        click.secho("")
 
     if len(failure) > 0:
         click.secho("Failures:")
