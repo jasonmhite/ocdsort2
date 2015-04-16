@@ -142,7 +142,7 @@ def do_sort(path, dry):
                 #move_files(info)
                 #bar.update(1)
 
-        to_chown = move_files(info)
+        to_chown = move_files(results)
 
         if "user" in config:
             for file in to_chown:
