@@ -285,7 +285,7 @@ def print_status(episodes):
             click.secho("    {} -> {}".format(fname, item['new_name']))
 
         if len(failure) > 0:
-        click.secho("")
+            click.secho("")
 
     if len(failure) > 0:
         click.secho("Failures:")
