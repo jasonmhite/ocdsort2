@@ -38,10 +38,6 @@ def coerceNone(t):
         return showSchema(t)
     else: raise Invalid("Invalid show entry")
 
-showsSchema = Schema({
-    Required(str): coerceNone
-})
-
 configSchema = Schema({
     Required('config'): Schema({
         Required("valid_extensions"): [str],
@@ -53,7 +49,7 @@ configSchema = Schema({
             Required("mode"): checkChmod,
         }),
     }),
-    Required('shows'): showsSchema,
+    Required('shows'): Schema({Required(str): coerceNone}),
 })
 
 def lazy(*args, **kwargs):
@@ -77,10 +73,6 @@ def config(c):
 def shows(c):
     return c['shows']
 
-@click.group()
-def main():
-    pass
-
 @lazy(shows)
 def all_shows(shows):
     aliases = {}
@@ -94,6 +86,13 @@ def all_shows(shows):
             continue
 
     return aliases
+
+def filtered(f):
+    def f_filtered(items):
+        for item in filter(lambda i: not i['failed'], items):
+            yield f(item)
+
+    return f_filtered
 
 default_entry = lambda: {
     "episodename": None,
@@ -110,12 +109,9 @@ default_entry = lambda: {
     "offset": None
 }
 
-def filtered(f):
-    def f_filtered(items):
-        for item in filter(lambda i: not i['failed'], items):
-            yield f(item)
-
-    return f_filtered
+@click.group()
+def main():
+    pass
 
 @click.command()
 @click.argument('path', type=click.Path(exists=True))
@@ -131,15 +127,6 @@ def do_sort(path, dry):
     ).findFiles()
 
     results = list(generate_names(identify(parse(filenames))))
-
-    #success = list(filter(lambda s: not s['failed'], results))
-    #fail = list(filter(lambda s: s['failed'], results))
-
-    #if len(success) == 0 and len(fail) == 0:
-        #print("No files found")
-        #sys.exit(0)
-
-    #print_results(success, fail)
 
     print_status(results)
 
@@ -274,9 +261,12 @@ def move_files(info, clean=True):
     return to_chown
 
 def print_status(episodes):
-    # Print successful cases
     success = list(filter(lambda i: not i['failed'], episodes))
     failure = list(filter(lambda i: i['failed'], episodes))
+
+    if len(success) == 0 and len(failure) == 0:
+        click.secho("No files found.")
+        sys.exit(1)
 
     if len(success) > 0:
         click.secho("Successfully identified:")
@@ -291,26 +281,7 @@ def print_status(episodes):
         click.secho("Failures:")
         for info in failure:
             fname = os.path.basename(item['filename'])
-            click.secho("    {} -> {}".format(fname, item['failure_reason']))
-
-def print_results(success, fail):
-    if len(success) > 0:
-        click.secho("Successfully identified:")
-        for item in success:
-            fname = os.path.basename(item['filename'])
-            click.secho("    {} -> {}".format(fname, item['new_name']))
-
-        click.secho("")
-
-    if len(fail) > 0:
-        click.secho("Failures:")
-        for item in fail:
-            fname = os.path.basename(item['filename'])
-            click.secho("    {} -> {}".format(
-                fname,
-                item['failure_reason'],
-            ))
-        click.secho("")
+            click.secho("    {} -> {}".format(fname, info['failure_reason']))
 
 if __name__ == '__main__':
     sort()
