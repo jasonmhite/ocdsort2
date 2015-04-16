@@ -112,7 +112,7 @@ default_entry = lambda: {
 
 def filtered(f):
     def f_filtered(items):
-        for item in filter(lambda i: i['failed'], items):
+        for item in filter(lambda i: not i['failed'], items):
             yield f(item)
 
     return f_filtered
@@ -192,23 +192,22 @@ def parse(filenames):
 
             yield info
 
-def identify(episodes):
-    for info in episodes:
-        if not info['failed']:
-            alias_name, confidence = process.extractOne(
-                info['seriesname'],
-                all_shows.keys(),
-            )
+@filtered
+def identify(info):
+    alias_name, confidence = process.extractOne(
+        info['seriesname'],
+        all_shows.keys(),
+    )
 
-            if confidence > config['threshold']:
-                info["identified_as"] = all_shows[alias_name]
-                info["confidence"] = confidence
+    if confidence > config['threshold']:
+        info["identified_as"] = all_shows[alias_name]
+        info["confidence"] = confidence
 
-            else:
-                info['failed'] = True
-                info['failure_reason'] = "Series not identified (confidence={})".format(confidence)
+    else:
+        info['failed'] = True
+        info['failure_reason'] = "Series not identified (confidence={})".format(confidence)
 
-        yield info
+    return info
 
 def generate_names(episodes):
     for info in episodes:
