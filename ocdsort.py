@@ -136,25 +136,25 @@ def do_sort(path, dry):
     if not dry:
         click.confirm("Proceed to move files?", abort=True)
 
-        to_chown = []
+        #nsuccess = len([i for i in results if not i['failed']])
+        #with click.progressbar(length=nsuccess) as bar:
+            #for info in filter(lambda s: not s['failed'], results):
+                #move_files(info)
+                #bar.update(1)
 
-        nsuccess = len(success)
-        with click.progressbar(length=nsuccess) as bar:
-            for file in success:
-                to_chown += move_files(file)
-                bar.update(1)
+        to_chown = move_files(info)
 
-    click.secho("Setting permissions")
-    for file in to_chown:
-        shutil.chown(
-            file,
-            user=config['user']['uid'],
-            group=config['user']['gid'],
-        )
-        os.chmod(
-            file,
-            int(config['user']['mode'], 8),
-        )
+        if "user" in config:
+            for file in to_chown:
+                shutil.chown(
+                    file,
+                    user=config['user']['uid'],
+                    group=config['user']['gid'],
+                )
+                os.chmod(
+                    file,
+                    int(config['user']['mode'], 8),
+                )
 
 def parse(filenames):
     for filename in filenames:
@@ -221,47 +221,52 @@ def generate_names(info):
 
     return info
 
-def move_files(info, clean=True):
-    # notice: this one does not loop over info, because the main loop prints
-    # the progress bar
+def move_files(infos, clean=True):
+    # Note: not passed with filter because of the progress bar
+
+    success = list(filter(lambda s: not s['failed'], infos))
+
     to_chown = []
-    try:
-        # Note: don't think the renamer in tvnamer works correctly
 
-        new_path = os.path.join(
-            config['destination'],
-            info['identified_as'],
-        )
-        print(new_path)
+    with click.progressbar(length=len(success)) as bar:
+        for info in success:
+            try:
+                new_path = os.path.join(
+                    config['destination'],
+                    info['identified_as'],
+                )
 
-        # See if directory exists, otherwise make it
-        try:
-            os.makedirs(new_path)
-            to_chown.append(new_path)
-        except OSError as e:
-            if e.errno != 17:
-                raise
+                try:
+                    os.makedirs(new_path)
+                    to_chown.append(new_path)
 
-        new_full_name = os.path.join(new_path, info['new_name'])
+                except OSError as e:
+                    if e.errno != 17:
+                        raise
 
-        shutil.move(
-            info['filename'],
-            new_full_name,
-        )
+                new_full_name = os.path.join(new_path, info['new_name'])
 
-        to_chown.append(new_full_name)
+                shutil.move(
+                    info['filename'],
+                    new_full_name,
+                )
 
-        if clean:
-            os.unlink(info['filename'])
+                to_chown.append(new_full_name)
 
-        info['moved_to'] = new_full_name
+                if clean:
+                    os.unlink(info['filename'])
 
-    except Exception as e:
-        info['failed'] = True
-        info['moved_to'] = None
-        info['failure_reason'] = "Error moving file ({})".format(e)
+                info['moved_to'] = new_full_name
 
-    return to_chown
+            except Exception as e:
+                info['failed'] = True
+                info['moved_to'] = None
+                info['failure_reason'] = "Error moving file ({})".format(e)
+
+            finally:
+                bar.update(1)
+
+        return to_chown
 
 def print_status(episodes):
     success = list(filter(lambda i: not i['failed'], episodes))
