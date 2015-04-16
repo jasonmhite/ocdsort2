@@ -271,6 +271,25 @@ def move_files(info, clean=True):
 
     return to_chown
 
+def print_status(episodes):
+    # Print successful cases
+    success = list(filter(lambda i: not i['failed']))
+    failure = list(filter(lambda i: i['failed']))
+
+    if len(success) > 0:
+        click.secho("Successfully identified:")
+        for info in success:
+            fname = os.path.basename(item['filename'])
+            click.secho("    {} -> {}".format(fname, item['new_name']))
+
+        if len(failure) > 0:
+            click.secho("")
+
+    if len(failure) > 0:
+        click.secho("Failures:")
+        for info in failure:
+            fname = os.path.basename(item['filename'])
+            click.secho("    {} -> {}".format(fname, item['failure_reason']))
 
 def print_results(success, fail):
     if len(success) > 0:

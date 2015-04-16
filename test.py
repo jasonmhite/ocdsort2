@@ -2,6 +2,7 @@ from unittest import mock
 from copy import deepcopy as copy
 from voluptuous import Invalid
 from nose.tools import raises
+from io import StringIO, TextIOWrapper
 
 import ocdsort
 
@@ -109,3 +110,10 @@ def test_move_files(mock_makedirs, mock_unlink, mock_move):
         FINAL_NAME
     )
 
+temp_output = StringIO()
+@mock.patch('ocdsort.click._compat._default_text_stdout', TextIOWrapper(temp_output))
+def test_print_results():
+    ocdsort.click.echo("Hello")
+    print(temp_output.getvalue())
+
+    raise Exception("AMBM")
