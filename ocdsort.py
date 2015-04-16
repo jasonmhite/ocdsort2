@@ -4,15 +4,57 @@ import click
 import os
 import tvnamer
 import shutil
+import sys
+
+from itertools import product
+from voluptuous import *
 from tvnamer import utils
 from fuzzywuzzy import process
-import sys
 from lazy_object_proxy import Proxy
 
 confdir = os.path.join(
     os.getenv('HOME'),
     'ocdsort.yml',
 )
+
+showSchema = Schema({
+    Required("season", default=1): int,
+    Required("offset", default=0): int,
+    Required("names", default=[]): [str]
+})
+
+valid_chmods = ["".join(map(str, i)) for i in product(range(10), repeat=3)]
+
+def checkChmod(t):
+    if t not in valid_chmods:
+        raise Invalid("{} not valid chmod mode".format(t))
+
+    return t
+
+def coerceNone(t):
+    if t is None:
+        return showSchema({})
+    elif type(t) is dict:
+        return showSchema(t)
+    else: raise Invalid("Invalid show entry")
+
+showsSchema = Schema({
+    Required(str): coerceNone
+})
+
+configSchema = Schema({
+    Required('config'): Schema({
+        Required("valid_extensions"): [str],
+        Required("destination"): str,
+        Required("threshold", default=85): Range(min=1, max=100),
+        Optional("user"): Schema({
+            Required("uid"): Range(min=0),
+            Required("gid"): Range(min=0),
+            Required("mode"): checkChmod,
+        }),
+    }),
+    Required('shows'): showsSchema,
+})
 
 def lazy(*args, **kwargs):
     def call_f(f):
@@ -25,7 +67,7 @@ def global_config(filename):
     with open(filename) as f:
         conf = yaml.load(f.read())
 
-    return conf
+    return configSchema(conf)
 
 @lazy(global_config)
 def config(c):
@@ -52,6 +94,21 @@ def all_shows(shows):
             continue
 
     return aliases
+
+default_entry = {
+    "episodename": None,
+    "filename": None
+    "seriesname": None,
+    "failure_reason": None,
+    "failed": False,
+    "ext": None,
+    "episode": None,
+    "confidence": None,
+    "identified_as": None,
+    "new_name": None,
+    "season": None,
+    "offset": None
+}
 
 @click.command()
 @click.argument('path', type=click.Path(exists=True))

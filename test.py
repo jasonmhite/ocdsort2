@@ -1,5 +1,8 @@
 from unittest import mock
 from copy import deepcopy as copy
+from voluptuous import Invalid
+from nose.tools import raises
+
 import ocdsort
 
 CONFIG = """
@@ -28,15 +31,25 @@ PARSED_CONFIG = {
         },
     },
     "shows": {
-        "some show": None
+        "some show": {
+            "season": 1,
+            "offset": 0,
+            "names": [],
+        },
     },
 }
-
 
 def test_config():
     with mock.patch('ocdsort.open', mock.mock_open(read_data=CONFIG), create=True):
         assert ocdsort.config == PARSED_CONFIG["config"]
         assert ocdsort.shows == PARSED_CONFIG["shows"]
+
+def test_validate():
+    ocdsort.configSchema(PARSED_CONFIG)
+
+@raises(Invalid)
+def test_invalid():
+    ocdsort.configSchema({})
 
 files = ["[Blah] some show - 01.mkv"]
 
