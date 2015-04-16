@@ -275,8 +275,8 @@ def move_files(info, clean=True):
 
 def print_status(episodes):
     # Print successful cases
-    success = list(filter(lambda i: not i['failed']))
-    failure = list(filter(lambda i: i['failed']))
+    success = list(filter(lambda i: not i['failed'], episodes))
+    failure = list(filter(lambda i: i['failed'], episodes))
 
     if len(success) > 0:
         click.secho("Successfully identified:")
