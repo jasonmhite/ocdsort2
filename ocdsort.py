@@ -134,14 +134,12 @@ def do_sort(path, dry):
     print_status(results)
 
     if not dry:
+        nsuccess = len([i for i in results if not i['failed']])
+        if nsuccess == 0:
+            click.secho("No files found.")
+            sys.exit(0)
+
         click.confirm("Proceed to move files?", abort=True)
-
-        #nsuccess = len([i for i in results if not i['failed']])
-        #with click.progressbar(length=nsuccess) as bar:
-            #for info in filter(lambda s: not s['failed'], results):
-                #move_files(info)
-                #bar.update(1)
-
         to_chown = move_files(results)
 
         if "user" in config:
