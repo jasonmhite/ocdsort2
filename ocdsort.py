@@ -89,8 +89,11 @@ def all_shows(shows):
 
 def filtered(f):
     def f_filtered(items):
-        for item in filter(lambda i: not i['failed'], items):
-            yield f(item)
+        for item in items:
+            if item['failed']:
+                yield item
+            else:
+                yield f(item)
 
     return f_filtered
 

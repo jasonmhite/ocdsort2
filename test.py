@@ -115,15 +115,14 @@ OUTPUT = """Successfully identified:
     [Blah] some show - 01.mkv -> some show - S1E01.mkv
 
 Failures:
-    [Blah] some show - 01.mkv -> Test failure
-"""
+    [Blah] some show - 01.mkv -> Test failure"""
 
 def test_print_results():
     with mock.patch('ocdsort.click.secho', mock_echo) as m:
         success = [NAMED]
         failure = [copy(NAMED)]
         failure[0].update(failed=True, failure_reason="Test failure")
-        ocdsort.print_results(success, failure)
+        ocdsort.print_status(success + failure)
 
         assert m.call_args_list == [mock.call(s) for s in OUTPUT.split('\n')]
 
