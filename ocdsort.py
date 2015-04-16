@@ -271,8 +271,8 @@ def print_status(episodes):
     if len(success) > 0:
         click.secho("Successfully identified:")
         for info in success:
-            fname = os.path.basename(item['filename'])
-            click.secho("    {} -> {}".format(fname, item['new_name']))
+            fname = os.path.basename(info['filename'])
+            click.secho("    {} -> {}".format(fname, info['new_name']))
 
         if len(failure) > 0:
             click.secho("")
@@ -280,7 +280,7 @@ def print_status(episodes):
     if len(failure) > 0:
         click.secho("Failures:")
         for info in failure:
-            fname = os.path.basename(item['filename'])
+            fname = os.path.basename(info['filename'])
             click.secho("    {} -> {}".format(fname, info['failure_reason']))
 
 if __name__ == '__main__':
