@@ -209,35 +209,25 @@ def identify(info):
 
     return info
 
-def generate_names(episodes):
-    for info in episodes:
-        if not info['failed']:
-            try:
-                title = info['identified_as']
-                extension = info['ext']
+@filtered
+def generate_names(info):
+    try:
+        title = info['identified_as']
+        extension = info['ext']
 
-                # Check for optional overrides
-                try:
-                    info['offset'] = shows[title]['episode_offset']
-                    episode = int(info['episode']) + info['offset']
-                except (KeyError, TypeError):
-                    info['offset'] = 0
-                    episode = int(info['episode'])
+        info['offset'] = shows[title]['offset']
+        episode = int(info['episode']) + info['offset']
+        info['season'] = int(shows[title]['season'])
 
-                try:
-                    info['season'] = int(shows[title]['season'])
-                except (KeyError, TypeError):
-                    info['season'] = 1
+        info["new_name"] = utils.makeValidFilename(
+            "{identified_as} - S{season}E{episode}{ext}".format(**info),
+        )
 
-                info["new_name"] = utils.makeValidFilename(
-                    "{identified_as} - S{season}E{episode}{ext}".format(**info),
-                )
+    except Exception as e:
+        info['failed'] = True
+        info['failure_reason'] = "Error during name generation ({})".format(e)
 
-            except Exception as e:
-                info['failed'] = True
-                info['failure_reason'] = "Error during name generation ({})".format(e)
-
-        yield info
+    return info
 
 def move_files(info, clean=True):
     # notice: this one does not loop over info, because the main loop prints

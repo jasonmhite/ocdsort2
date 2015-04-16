@@ -90,6 +90,8 @@ def test_generate_names():
     global test_names
     test_names = list(ocdsort.generate_names(test_identified))
 
+    print(test_names)
+
     assert test_names == [NAMED]
 
 FINAL_NAME = "/test/some show/some show - S1E01.mkv"
