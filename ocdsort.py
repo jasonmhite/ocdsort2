@@ -101,7 +101,6 @@ def do_sort(path, dry):
         )
 
 def parse(filenames):
-    need_newl = False
     for filename in filenames:
         try:
             r = utils.FileParser(filename).parse()
@@ -121,18 +120,13 @@ def parse(filenames):
                 yield info
 
         except (tvnamer.tvnamer_exceptions.InvalidFilename, KeyError) as e:
-            # This type of error is a bit different, so this file
-            # will be ignored and won't be reported.
-            click.secho(
-                "Error processing {} -> {}".format(
-                        os.path.basename(filename),
-                        e
-                    )
+            info['failed'] = True
+            info['failure_reason'] = "Error parsing {} -> {}".format(
+                os.path.basename(filename),
+                e
             )
-            need_newl = True
-            continue
-    if need_newl:
-        click.secho("")
+
+            yield info
 
 def identify(episodes):
     for info in episodes:
